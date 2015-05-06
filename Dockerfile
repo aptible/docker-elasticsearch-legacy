@@ -14,8 +14,8 @@ RUN apt-get -y install software-properties-common && \
 
 # Install Elasticsearch and clean up
 RUN apt-get -y install wget && cd /tmp && \
-    wget http://bit.ly/elasticsearch-132 && tar xvzf elasticsearch-132 && \
-    mv /tmp/elasticsearch-1.3.2 /elasticsearch && rm -rf elasticsearch-132
+    wget http://bit.ly/elasticsearch-152 && tar xvzf elasticsearch-152 && \
+    mv /tmp/elasticsearch-1.5.2 /elasticsearch && rm -rf elasticsearch-152
 
 # Mount elasticsearch.yml config
 ADD templates/elasticsearch.yml /elasticsearch/config/elasticsearch.yml
