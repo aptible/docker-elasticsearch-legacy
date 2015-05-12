@@ -1,5 +1,7 @@
+discovery.zen.ping.multicast.enabled: false
 path:
   data: /data/data
   logs: /data/log
   plugins: /data/plugins
   work: /data/work
+
