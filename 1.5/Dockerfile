@@ -37,12 +37,16 @@ RUN wget -q -O - http://nodejs.org/dist/v0.12.4/node-v0.12.4-linux-x64.tar.gz | 
     ln -s /node-v0.12.4-linux-x64/bin/npm /usr/local/bin/ && \
     npm install -g elasticdump
 
+# Curl it curl it
+RUN apt-install -y curl pwgen python
+
 ADD templates/nginx.conf.template /etc/nginx/nginx.conf.template
 ADD templates/nginx-wrapper /usr/sbin/nginx-wrapper
 
 # Mount elasticsearch.yml config
-ADD templates/elasticsearch.yml /elasticsearch/config/elasticsearch.yml
+ADD templates/elasticsearch.yml.template /elasticsearch/config/elasticsearch.yml.template
 
+ADD extract_es_settings.py /usr/bin/
 ADD run-database.sh /usr/bin/
 ADD utilities.sh /usr/bin/
 
@@ -57,4 +61,10 @@ VOLUME ["$SSL_DIRECTORY"]
 EXPOSE 80
 EXPOSE 443
 
+# Expose ElasticSearch transport port
+EXPOSE 9300
+
+
+# TOOD - Supervisor? Looks like terminating Nginx will kill
+# Elastic brutally here..!
 ENTRYPOINT ["run-database.sh"]

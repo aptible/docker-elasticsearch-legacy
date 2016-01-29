@@ -1,0 +1,27 @@
+path:
+  data: /var/db/data
+  logs: /var/db/log
+  plugins: /elasticsearch/plugins
+  work: /var/db/work
+
+http:
+  cors:
+    enabled: true
+    allow-origin: "/.*/"
+
+
+cluster.name: __CLUSTER_NAME__
+
+http:
+  bind_host: 127.0.0.1
+
+transport:
+  # https://www.elastic.co/guide/en/elasticsearch/reference/1.5/modules-transport.html
+  bind_host: 0.0.0.0
+  tcp.port: 9300
+  publish_host: __NODE_PUBLISH_HOST__
+  publish_port: __NODE_PUBLISH_PORT__
+
+discovery.zen.ping:
+  multicast.enabled: false
+  unicast.hosts: __CLUSTER_HOSTS__
