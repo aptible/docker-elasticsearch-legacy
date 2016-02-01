@@ -27,15 +27,14 @@ function elastic_initialize_conf_dir () {
     CLUSTER_HOSTS="[]"  # No hosts
   fi
 
-  # TODO - Fix this (!).
-  #NODE_PUBLISH_HOST="192.168.99.101"
-  #NODE_PUBLISH_PORT="1234"
-
   es_config="/elasticsearch/config/elasticsearch.yml"
   cp "${es_config}"{.template,}
 
   sed -i "s/__CLUSTER_NAME__/${CLUSTER_NAME}/g"             "${es_config}"
   sed -i "s/__CLUSTER_HOSTS__/${CLUSTER_HOSTS}/g"           "${es_config}"
+
+  # TODO - We probably should not expose those to always be available, or
+  # expect them to be provided under this name.
   sed -i "s/__NODE_PUBLISH_HOST__/${NODE_PUBLISH_HOST}/g"   "${es_config}"
   sed -i "s/__NODE_PUBLISH_PORT__/${NODE_PUBLISH_PORT}/g"   "${es_config}"
 }
