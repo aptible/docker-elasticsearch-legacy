@@ -13,6 +13,8 @@ http:
 cluster.name: __CLUSTER_NAME__
 
 http:
+  # Nginx is used as a reverse proxy for authentication, so we only listen on
+  # 127.0.0.1
   bind_host: 127.0.0.1
 
 transport:
