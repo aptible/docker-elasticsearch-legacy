@@ -60,8 +60,8 @@ http {
     listen   443;
 
     ssl on;
-    ssl_certificate SSL_DIRECTORY/server.crt;
-    ssl_certificate_key SSL_DIRECTORY/server.key;
+    ssl_certificate __SSL_DIRECTORY__/server.crt;
+    ssl_certificate_key __SSL_DIRECTORY__/server.key;
 
     keepalive_timeout 5;
 
