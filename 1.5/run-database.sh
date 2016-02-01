@@ -43,24 +43,29 @@ function elastic_initialize_conf_dir () {
 
 if [[ "$1" == "--initialize" ]]; then
   # Nginx SSL Setup
-  htpasswd -b -c "$DATA_DIRECTORY"/auth_basic.htpasswd "${USERNAME:-aptible}" "$PASSPHRASE"
+  htpasswd -b -c "${DATA_DIRECTORY}/auth_basic.htpasswd" "${USERNAME:-aptible}" "$PASSPHRASE"
   if [ -n "$SSL_CERTIFICATE" ] && [ -n "$SSL_KEY" ]; then
     echo "$SSL_CERTIFICATE" > "$SSL_DIRECTORY"/server.crt
     echo "$SSL_KEY" > "$SSL_DIRECTORY"/server.key
     chmod og-rwx "$SSL_DIRECTORY"/server.key
   fi
 
+  # TODO - Run ES as separate user to prevent access to SSL certs.
+
   # Discover cluster name, load up master host.
   echo "Initializing cluster name"
   CLUSTER_NAME="es-$(pwgen -s 10)"
   echo "${CLUSTER_NAME}" > "${ES_CLUSTER_NAME_FILE}"
 
+elif [[ "$1" == "--activate-leader" ]]; then
+  # TODO - Document that this *needs* to have access to the master volumes.
+  # Export htaccess for slave to replicate.
+  echo "ELASTIC_REPLICATION_HTACCESS='$(cat "${DATA_DIRECTORY}/auth_basic.htpasswd")'"
+
 elif [[ "$1" == "--initialize-from" ]]; then
-  # TODO - Nginx users must be soemhow transferred here. This could (should) be done in --activate-leader,
-  # unless Shield can somehow do it.
-  set -o xtrace  # TODO - Remove
   [ -z "$2" ] && echo "docker run aptible/elasticsearch --initialize-from https://..." && exit
-  #parse_url "$2"
+
+  echo "${ELASTIC_REPLICATION_HTACCESS}" > "${DATA_DIRECTORY}/auth_basic.htpasswd"
 
   # Get the cluster name and nodes, store them
   # https://www.elastic.co/guide/en/elasticsearch/reference/1.5/cluster-nodes-info.html
@@ -69,7 +74,7 @@ elif [[ "$1" == "--initialize-from" ]]; then
   eval "$es_settings"
 
   echo "${CLUSTER_NAME}" > "${DATA_DIRECTORY}/cluster-name"
-  echo "${CLUSTER_HOSTS}" > "${DATA_DIRECTORY}/cluster-hosts" # TODO - Update periodically?
+  echo "${CLUSTER_HOSTS}" > "${DATA_DIRECTORY}/cluster-hosts" # TODO - Do we need to update this periodically to register new hosts?
 
 elif [[ "$1" == "--client" ]]; then
   echo "This image does not support the --client option. Use curl instead." && exit 1
