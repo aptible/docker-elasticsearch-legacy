@@ -5,19 +5,24 @@ set -o pipefail
 
 . /usr/bin/utilities.sh
 
-sed "s:SSL_DIRECTORY:${SSL_DIRECTORY}:g" /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
+# File name constants
+ES_CLUSTER_NAME_FILE="${DATA_DIRECTORY}/cluster-name"
+ES_CLUSTER_HOSTS_FILE="${DATA_DIRECTORY}/cluster-hosts"
+
+
+sed "s:SSL_DIRECTORY:${SSL_DIRECTORY}:g" /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
 function elastic_initialize_conf_dir () {
   # Load cluster name
-  if [[ -f "${DATA_DIRECTORY}/cluster-name" ]]; then
-    CLUSTER_NAME="$(cat "${DATA_DIRECTORY}/cluster-name")"
+  if [[ -f "${ES_CLUSTER_NAME_FILE}" ]]; then
+    CLUSTER_NAME="$(cat "${ES_CLUSTER_NAME_FILE}")"
   else
-    CLUSTER_NAME="elasticsearch"  # Old default
+    CLUSTER_NAME="elasticsearch"  # Old default (no cluster name)
   fi
 
-  if [[ -f "${DATA_DIRECTORY}/cluster-hosts" ]]; then
-    CLUSTER_HOSTS="$(cat "${DATA_DIRECTORY}/cluster-hosts")"
+  if [[ -f "${ES_CLUSTER_HOSTS_FILE}" ]]; then
+    CLUSTER_HOSTS="$(cat "${ES_CLUSTER_HOSTS_FILE}")"
   else
     CLUSTER_HOSTS="[]"  # No hosts
   fi
@@ -25,7 +30,6 @@ function elastic_initialize_conf_dir () {
   # TODO - Fix this (!).
   #NODE_PUBLISH_HOST="192.168.99.101"
   #NODE_PUBLISH_PORT="1234"
-  set -o nounset  # TODO
 
   es_config="/elasticsearch/config/elasticsearch.yml"
   cp "${es_config}"{.template,}
@@ -38,7 +42,6 @@ function elastic_initialize_conf_dir () {
 
 
 if [[ "$1" == "--initialize" ]]; then
-
   # Nginx SSL Setup
   htpasswd -b -c "$DATA_DIRECTORY"/auth_basic.htpasswd "${USERNAME:-aptible}" "$PASSPHRASE"
   if [ -n "$SSL_CERTIFICATE" ] && [ -n "$SSL_KEY" ]; then
@@ -48,19 +51,22 @@ if [[ "$1" == "--initialize" ]]; then
   fi
 
   # Discover cluster name, load up master host.
-  # TODO - Should we hit the master and find out about other hosts instead?
   echo "Initializing cluster name"
   CLUSTER_NAME="es-$(pwgen -s 10)"
-  echo "${CLUSTER_NAME}" > "${DATA_DIRECTORY}/cluster-name"
+  echo "${CLUSTER_NAME}" > "${ES_CLUSTER_NAME_FILE}"
 
 elif [[ "$1" == "--initialize-from" ]]; then
-  set -o xtrace
+  # TODO - Nginx users must be soemhow transferred here. This could (should) be done in --activate-leader,
+  # unless Shield can somehow do it.
+  set -o xtrace  # TODO - Remove
   [ -z "$2" ] && echo "docker run aptible/elasticsearch --initialize-from https://..." && exit
   #parse_url "$2"
 
   # Get the cluster name and nodes, store them
   # https://www.elastic.co/guide/en/elasticsearch/reference/1.5/cluster-nodes-info.html
-  eval $(curl -s "${2}/_nodes" | extract_es_settings.py)
+  # TODO - Do we want to keep --insecure here?
+  es_settings="$(curl --insecure --silent "${2}/_nodes" | extract_es_settings.py)"
+  eval "$es_settings"
 
   echo "${CLUSTER_NAME}" > "${DATA_DIRECTORY}/cluster-name"
   echo "${CLUSTER_HOSTS}" > "${DATA_DIRECTORY}/cluster-hosts" # TODO - Update periodically?
@@ -79,6 +85,7 @@ elif [[ "$1" == "--restore" ]]; then
   elasticdump --bulk=true --input=$ --output=${protocol:-https}"://"$user":"$password"@"$host":"${port:-80}""
 
 elif [[ "$1" == "--readonly" ]]; then
+  elastic_initialize_conf_dir
   READONLY=1 /usr/sbin/nginx-wrapper
 
 else
