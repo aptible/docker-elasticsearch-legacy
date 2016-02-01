@@ -64,6 +64,8 @@ elif [[ "$1" == "--activate-leader" ]]; then
 elif [[ "$1" == "--initialize-from" ]]; then
   [ -z "$2" ] && echo "docker run aptible/elasticsearch --initialize-from https://..." && exit
 
+  # TODO - Certs
+
   echo "${ELASTIC_REPLICATION_HTACCESS}" > "${DATA_DIRECTORY}/auth_basic.htpasswd"
 
   # Get the cluster name and nodes, store them
