@@ -6,7 +6,13 @@ IMG="$1"
 
 DB_CONTAINER="elastic"
 DATA_CONTAINER="${DB_CONTAINER}-data"
-PLUGINS="mapper-attachments analysis-phonetic"
+
+if dpkg --compare-versions "$ES_VERSION" ge 5; then
+  PLUGINS="ingest-attachment analysis-phonetic"
+else
+  PLUGINS="mapper-attachments analysis-phonetic"
+fi
+
 
 function cleanup {
   echo "Cleaning up"

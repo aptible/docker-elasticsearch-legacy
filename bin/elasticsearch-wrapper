@@ -2,6 +2,12 @@
 set -o errexit
 set -o nounset
 
+# ES no longer allows AWS creds to be be passed via request when creating
+# a backup respository, but we'd rather keep doing that, anyways.
+if dpkg --compare-versions "$ES_VERSION" ge 6; then
+  export ES_JAVA_OPTS="-Des.allow_insecure_settings=true ${ES_JAVA_OPTS:-}"
+fi
+
 if [[ -n "${ES_HEAP_SIZE:-}" ]]; then
   # If we have an ENV var that sets ES_HEAP_SIZE, then we use that.
   echo "ES_HEAP_SIZE was forced to ${ES_HEAP_SIZE} via configuration!"

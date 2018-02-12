@@ -23,7 +23,6 @@ json=$(cat << EOF
     "base_path": "${S3_BUCKET_BASE_PATH}",
     "access_key": "${AWS_ACCESS_KEY_ID}",
     "secret_key": "${AWS_SECRET_ACCESS_KEY}",
-    "region": "${S3_REGION}",
     "protocol": "https",
     "server_side_encryption": true
   }
@@ -38,8 +37,8 @@ function cleanup {
 
 function wait_for_s3 {
 
-  for _ in $(seq 1 60); do
-    if docker exec "$DB_CONTAINER" curl -w "\n" -sS -XPUT "${REPOSITORY_URL}" -d "$json" | grep '{\"acknowledged\":true}'; then
+  for _ in $(seq 1 30); do
+    if docker exec "$DB_CONTAINER" curl -w "\n" -H'Content-Type: application/json' -sS -XPUT "${REPOSITORY_URL}" -d "$json" | grep '{\"acknowledged\":true}'; then
       echo "S3 backup succeeded."
       return 0
     fi
