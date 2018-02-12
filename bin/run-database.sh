@@ -64,28 +64,10 @@ elif [[ "$1" == "--client" ]]; then
   echo "This image does not support the --client option. Use curl instead." && exit 1
 
 elif [[ "$1" == "--dump" ]]; then
-  [ -z "$2" ] && echo "docker run aptible/elasticsearch --dump https://... > dump.es" && exit
-
-  if dpkg --compare-versions "$ES_VERSION" ge 5; then
-    echo "Not supported for Elasticsearch ${ES_VERSION}"
-    exit 1
-  fi
-
-  parse_url "$2"
-  # shellcheck disable=SC2154
-  elasticdump --all=true --input="${protocol:-"https://"}${user}:${password}@${host}:${port:-80}" '--output=$'
+  echo "Not supported"
 
 elif [[ "$1" == "--restore" ]]; then
-  [ -z "$2" ] && echo "docker run -i aptible/elasticsearch --restore https://... < dump.es" && exit
-
-  if dpkg --compare-versions "$ES_VERSION" ge 5; then
-    echo "Not supported for Elasticsearch ${ES_VERSION}"
-    exit 1
-  fi
-
-  parse_url "$2"
-  # shellcheck disable=SC2154
-  elasticdump --bulk=true '--input=$' --output="${protocol:-"https://"}${user}:${password}@${host}:${port:-80}"
+  echo "Not supported"
 
 else
   echo "Unrecognized command: $1"
