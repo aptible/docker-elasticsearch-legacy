@@ -20,9 +20,11 @@ The first command sets up a data container named `data` which will hold the conf
 
 ## Available Tags
 
-* `latest`: Currently Elasticsearch 6.1
+* `latest`: Currently Elasticsearch 6.2
+* `6.2`: Elasticsearch 6.2.2
 * `6.1`: Elasticsearch 6.1.3
 * `6.0`: Elasticsearch 6.0.1
+* `5.6`: Elasticsearch 5.6.8
 * `5.1`: Elasticsearch 5.1.1
 * `5.0`: Elasticsearch 5.0.2
 * `2.4`: Elasticsearch 2.4.5
