@@ -36,7 +36,7 @@ function get_license_uid {
 trap cleanup EXIT
 cleanup
 
-if [[ ! "$TAG" =~ ^5 ]]; then
+if [[ "$TAG" =~ ^1 ]] || [[ "$TAG" =~ ^2 ]]; then
   echo "Not running x-pack test on ${TAG}"
   exit 0
 fi
@@ -87,4 +87,9 @@ wait_for_xpack
 if [[ "$uid" != "$(get_license_uid)" ]]; then
   echo "License UID changed after recreate"
   exit 1
+fi
+
+if [[ ! "$TAG" =~ ^5 ]]; then
+  echo "Checking keystore was not used"
+  ! docker exec -it "$DB_CONTAINER" /elasticsearch/bin/elasticsearch-keystore list | grep -v keystore.seed
 fi
