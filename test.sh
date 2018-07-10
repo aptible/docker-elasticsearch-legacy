@@ -4,10 +4,23 @@ set -o nounset
 
 IMG="$REGISTRY/$REPOSITORY:$TAG"
 
-./test-restart.sh "$IMG"
-./test-exit-code.sh "$IMG"
-./test-xpack.sh "$IMG"
-./test-plugin.sh "$IMG"
+echo "Unit Tests..."
+docker run -it --rm --entrypoint "bash" "$IMG" \
+ -c "bats /tmp/test"
+
+TESTS=(
+  test-restart
+  test-exit-code
+  test-xpack
+  test-plugin
+ )
+
+for t in "${TESTS[@]}"; do
+  echo "--- START ${t} ---"
+  "./${t}.sh" "$IMG"
+  echo "--- OK    ${t} ---"
+  echo
+done
 
 if [[ -n ${AWS_ACCESS_KEY_ID:-} ]]; then
   ./test-backup.sh "$IMG"
