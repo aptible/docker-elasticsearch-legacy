@@ -75,7 +75,6 @@ VOLUME ["$SSL_DIRECTORY"]
 # Integration tests
 ADD test /tmp/test
 ADD <%= ENV.fetch 'TAG' %>/test /tmp/test
-RUN bats /tmp/test
 
 # Expose NGiNX proxy ports
 EXPOSE 80

@@ -1,56 +1,6 @@
 #!/usr/bin/env bats
 
-initialize_elasticsearch() {
-  USERNAME=aptible PASSPHRASE=password run-database.sh --initialize
-}
-
-wait_for_elasticsearch() {
-  # We pass the ES_PID via a global variable because we can't rely on
-  # $(wait_for_elasticsearch) as it would result in orpahning the ES process
-  # (which makes us unable to `wait` it).
-  run-database.sh "$@" >> "$ES_LOG" 2>&1 &
-  ES_PID="$!"
-  while ! grep -q "started" "$ES_LOG" 2>/dev/null; do
-    sleep 0.1
-  done
-}
-
-setup() {
-  export OLD_DATA_DIRECTORY="$DATA_DIRECTORY"
-  export OLD_SSL_DIRECTORY="$SSL_DIRECTORY"
-  export DATA_DIRECTORY=/tmp/datadir
-  export SSL_DIRECTORY=/tmp/ssldir
-  export ES_LOG="$BATS_TEST_DIRNAME/elasticsearch.log"
-  rm -rf "$DATA_DIRECTORY"
-  rm -rf "$SSL_DIRECTORY"
-  mkdir -p "$DATA_DIRECTORY"
-  mkdir -p "$SSL_DIRECTORY"
-}
-
-shutdown_nginx() {
-  NGINX_PID=$(pgrep nginx) || return 0
-  run pkill nginx
-  while [ -n "$NGINX_PID" ] && [ -e "/proc/${NGINX_PID}" ]; do sleep 0.1; done
-}
-
-shutdown_elasticsearch() {
-  JAVA_PID=$(pgrep java) || return 0
-  run pkill java
-  while [ -n "$JAVA_PID" ] && [ -e "/proc/${JAVA_PID}" ]; do sleep 0.1; done
-}
-
-teardown() {
-  shutdown_elasticsearch
-  shutdown_nginx
-  export DATA_DIRECTORY="$OLD_DATA_DIRECTORY"
-  export SSL_DIRECTORY="$OLD_SSL_DIRECTORY"
-  unset OLD_DATA_DIRECTORY
-  unset OLD_SSL_DIRECTORY
-  echo "---- BEGIN LOGS ----"
-  cat "$ES_LOG" || true
-  echo "---- END LOGS ----"
-  rm -f "$ES_LOG"
-}
+source "${BATS_TEST_DIRNAME}/test_helpers.sh"
 
 @test "It should provide an HTTP wrapper" {
   initialize_elasticsearch
@@ -62,15 +12,13 @@ teardown() {
 }
 
 @test "It should expose Elasticsearch over HTTP with Basic Auth" {
-  initialize_elasticsearch
-  wait_for_elasticsearch
+  start_elasticsearch
   run curl http://aptible:password@localhost
   [[ "$output" =~ "tagline"  ]]
 }
 
 @test "It should expose Elasticsearch over HTTPS with Basic Auth" {
-  initialize_elasticsearch
-  wait_for_elasticsearch
+  start_elasticsearch
   run curl -k https://aptible:password@localhost
   [[ "$output" =~ "tagline"  ]]
 }
@@ -102,16 +50,14 @@ teardown() {
 }
 
 @test "It should reject unauthenticated requests with Basic Auth enabled over HTTP" {
-  initialize_elasticsearch
-  wait_for_elasticsearch
+  start_elasticsearch
   run curl --fail http://localhost
   [[ "$status" -eq 22 ]]  # CURLE_HTTP_RETURNED_ERROR - https://curl.haxx.se/libcurl/c/libcurl-errors.html
   [[ "$output" =~ "401 Unauthorized"  ]]
 }
 
 @test "It should reject unauthenticated requests with Basic Auth enabled over HTTPS" {
-  initialize_elasticsearch
-  wait_for_elasticsearch
+  start_elasticsearch
   run curl -k --fail https://localhost
   [[ "$status" -eq 22 ]]  # CURLE_HTTP_RETURNED_ERROR - https://curl.haxx.se/libcurl/c/libcurl-errors.html
   [[ "$output" =~ "401 Unauthorized"  ]]
@@ -125,8 +71,7 @@ teardown() {
 }
 
 @test "It should exit when ES exits (or is killed) and report the exit code" {
-  initialize_elasticsearch
-  wait_for_elasticsearch
+  start_elasticsearch
 
   # Check that our PID is valid
   run ps af --pid "$ES_PID"
