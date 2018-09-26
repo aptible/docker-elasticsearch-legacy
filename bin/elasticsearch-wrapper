@@ -67,13 +67,15 @@ fi
 # Finally, if ELASTICSEARCH_XPACK is set, then install the X-Pack. We don't
 # currently allow relying on the X-Pack for authentication (since we have Nginx
 # in front), but could so here if there is demand.
-if [[ -n "${ELASTICSEARCH_XPACK:-}" ]]; then
-  if [[ -d "/elasticsearch/plugins/x-pack" ]]; then
-    echo "X-Pack is already installed"
-  else
-    plugin-install-wrapper "x-pack"
+if dpkg --compare-versions "$ES_VERSION" lt 6.3; then
+  if [[ -n "${ELASTICSEARCH_XPACK:-}" ]]; then
+    if [[ -d "/elasticsearch/plugins/x-pack" ]]; then
+      echo "X-Pack is already installed"
+    else
+      plugin-install-wrapper "x-pack"
+    fi
+    echo "xpack.security.enabled: false" >> /elasticsearch/config/elasticsearch.yml
   fi
-  echo "xpack.security.enabled: false" >> /elasticsearch/config/elasticsearch.yml
 fi
 
 exec sudo -HE -u "$ES_USER" /elasticsearch/bin/elasticsearch "$@"

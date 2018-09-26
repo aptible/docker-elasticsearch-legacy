@@ -10,9 +10,14 @@ wait_for_elasticsearch() {
   # (which makes us unable to `wait` it).
   run-database.sh "$@" >> "$ES_LOG" 2>&1 &
   ES_PID="$!"
-  while ! grep -q "started" "$ES_LOG" 2>/dev/null; do
-    sleep 0.1
+  for _ in $(seq 1 60); do
+    if grep -q "started" "$ES_LOG" 2>/dev/null; then
+      return 0
+    fi
+    sleep 1
   done
+  echo "Database timed out"
+  return 1
 }
 
 start_elasticsearch() {
