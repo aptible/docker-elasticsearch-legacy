@@ -1,5 +1,5 @@
-export ES_VERSION = 6.5.4
-export ES_SHA1SUM = f89d5796108b393cff87a0c0325065bc112b01ad
+export ES_VERSION = 6.6.1
+export ES_SHA1SUM = 43f304921fb46bc64cc23b522c2faa391074c731
 export ES_BACKUP_PLUGIN = repository-s3
 export ES_USER = elasticsearch
 export ES_GROUP = elasticsearch
