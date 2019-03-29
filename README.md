@@ -28,7 +28,7 @@ The first command sets up a data container named `data` which will hold the conf
 * `6.2`
 * `6.1`
 * `6.0`
-* `5.6`
+* `5.6`(EOL 2019-03-11)
 * `5.1`(EOL 2018-06-08)
 * `5.0`(EOL 2018-04-26)
 * `2.4`(EOL 2018-02-28)
