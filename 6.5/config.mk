@@ -5,3 +5,4 @@ export ES_USER = elasticsearch
 export ES_GROUP = elasticsearch
 
 export JAVA_VERSION = 8
+export OS_VERSION = 14.04

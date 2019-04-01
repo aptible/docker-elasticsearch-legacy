@@ -5,3 +5,4 @@ export ES_USER = root
 export ES_GROUP = root
 
 export JAVA_VERSION = 7
+export OS_VERSION = 14.04
