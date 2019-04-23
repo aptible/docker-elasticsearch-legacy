@@ -76,6 +76,10 @@ if dpkg --compare-versions "$ES_VERSION" lt 6.3; then
     fi
     echo "xpack.security.enabled: false" >> /elasticsearch/config/elasticsearch.yml
   fi
+else
+  # ES_VERSION gte 6.3 - those where we dont' need to explicitly install x-pack ourselves
+  # In case customer adds a paid license, we need to be sure this is disabled, too.
+  echo "xpack.security.enabled: false" >> /elasticsearch/config/elasticsearch.yml
 fi
 
 exec sudo -HE -u "$ES_USER" /elasticsearch/bin/elasticsearch "$@"
