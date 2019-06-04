@@ -13,6 +13,7 @@ RUN apt-install software-properties-common apache2-utils sudo curl
 ENV JAVA_VERSION <%= ENV.fetch 'JAVA_VERSION' %>
 RUN add-apt-repository -y ppa:openjdk-r/ppa && \
     apt-install "openjdk-${JAVA_VERSION}-jre"
+ENV JAVA_HOME /usr/lib/jvm/java-<%= ENV.fetch 'JAVA_VERSION' %>-openjdk-amd64/
 
 # Install NGiNX
 RUN add-apt-repository -y ppa:nginx/stable && \
@@ -20,17 +21,15 @@ RUN add-apt-repository -y ppa:nginx/stable && \
 
 # Install Elasticsearch and backup plugin.
 ENV ES_VERSION <%= ENV.fetch 'ES_VERSION' %>
+ENV DOWNLOAD_URL <%= ENV.fetch 'DOWNLOAD_URL' %>
 ENV ES_SHA1SUM <%= ENV.fetch 'ES_SHA1SUM' %>
 ENV ES_BACKUP_PLUGIN <%= ENV.fetch 'ES_BACKUP_PLUGIN' %>
 
 # Plugin wrapper for ES compatibility
 ADD bin/plugin-install-wrapper /usr/bin/plugin-install-wrapper
 
-RUN NEW_REPO="https://artifacts.elastic.co/downloads/elasticsearch" \
- && OLD_REPO="https://download.elasticsearch.org/elasticsearch/elasticsearch" \
- && REPO="$(dpkg --compare-versions "$ES_VERSION" ge 5 && printf "$NEW_REPO" || printf "$OLD_REPO" )" \
- && cd /tmp \
- && curl -fsSLO "${REPO}/elasticsearch-${ES_VERSION}.tar.gz" \
+RUN cd /tmp \
+ && curl -fsSL -o "elasticsearch-${ES_VERSION}.tar.gz" "${DOWNLOAD_URL}" \
  && echo "${ES_SHA1SUM}  elasticsearch-${ES_VERSION}.tar.gz" | sha1sum -c - \
  && tar xf "elasticsearch-${ES_VERSION}.tar.gz" \
  && rm "elasticsearch-${ES_VERSION}.tar.gz" \
