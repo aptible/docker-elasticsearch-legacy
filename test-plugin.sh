@@ -7,12 +7,7 @@ IMG="$1"
 DB_CONTAINER="elastic"
 DATA_CONTAINER="${DB_CONTAINER}-data"
 
-if dpkg --compare-versions "$ES_VERSION" ge 5; then
-  PLUGINS="ingest-attachment analysis-phonetic"
-else
-  PLUGINS="mapper-attachments analysis-phonetic"
-fi
-
+PLUGINS="ingest-attachment analysis-phonetic"
 
 function cleanup {
   echo "Cleaning up"
@@ -21,16 +16,8 @@ function cleanup {
 
 function wait_for_plugin {
 
-  if dpkg --compare-versions "$ES_VERSION" ge 5; then
-    CMD=elasticsearch-plugin
-  elif dpkg --compare-versions "$ES_VERSION" ge 2; then
-    CMD=plugin
-  else
-    CMD=plugin
-  fi
-
   for _ in $(seq 1 60); do
-    if docker exec $DB_CONTAINER /elasticsearch/bin/${CMD} list | grep "$1"; then
+    if docker exec $DB_CONTAINER /elasticsearch/bin/elasticsearch-plugin list | grep "$1"; then
       return 0
     fi
     sleep 1
@@ -54,7 +41,7 @@ docker create --name "$DATA_CONTAINER" "$IMG"
 
 echo "Initializing DB"
 docker run -it --rm \
-  -e USERNAME=user -e PASSPHRASE=pass -e DATABASE=db \
+  -e USERNAME=aptible -e PASSPHRASE=password -e DATABASE=db \
   --volumes-from "$DATA_CONTAINER" \
   "$IMG" --initialize \
   >/dev/null 2>&1

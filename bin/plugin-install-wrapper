@@ -7,16 +7,8 @@ if [[ ! "$#" -eq 1 ]]; then
   exit 1
 fi
 
-if dpkg --compare-versions "$ES_VERSION" ge 5; then
-  CMD=elasticsearch-plugin
-  ARGS=("install" "--batch" "$1")
-elif dpkg --compare-versions "$ES_VERSION" ge 2; then
-  CMD=plugin
-  ARGS=("install" "--batch" "$1")
-else
-  CMD=plugin
-  ARGS=(install "$1")
-fi
+CMD=elasticsearch-plugin
+ARGS=("install" "--batch" "$1")
 
 "/elasticsearch/bin/${CMD}" "${ARGS[@]}"
 

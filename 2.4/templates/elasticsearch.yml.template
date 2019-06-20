@@ -1,9 +1,0 @@
-discovery.zen.ping.multicast.enabled: false
-path:
-  data: DATA_DIRECTORY/data
-  logs: DATA_DIRECTORY/log
-  plugins: /elasticsearch/plugins
-  work: DATA_DIRECTORY/work
-  scripts: DATA_DIRECTORY/scripts
-http.cors.enabled: true
-http.cors.allow-origin: "/.*/"

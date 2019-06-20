@@ -4,9 +4,6 @@
 . /usr/bin/utilities.sh
 
 function setup_runtime_configuration() {
-  sed "s:SSL_DIRECTORY:${SSL_DIRECTORY}:g" /etc/nginx/nginx.conf.template \
-    > /etc/nginx/nginx.conf
-
   sed "s:SSL_DIRECTORY:${SSL_DIRECTORY}:g" "/elasticsearch/config/elasticsearch.yml.template" \
     | sed "s:DATA_DIRECTORY:${DATA_DIRECTORY}:g" \
     > "/elasticsearch/config/elasticsearch.yml"
@@ -22,6 +19,8 @@ function setup_runtime_configuration() {
     echo "$SSL_KEY" > "$ssl_key_file"
   elif [ -f "$ssl_cert_file" ] && [ -f "$ssl_key_file" ]; then
     echo "Cert present on filesystem - using them"
+    # ES demands that the certificate and key live in the Elasticsearch configuration directory
+    cp $ssl_key_file $ssl_cert_file /elasticsearch/config/
   else
     echo "Cert not found - autogenerating"
     SUBJ="/C=US/ST=New York/L=New York/O=Example/CN=elasticsearch.example.com"
@@ -34,6 +33,7 @@ function setup_runtime_configuration() {
   unset SSL_KEY
 
   chmod 600 "$ssl_key_file"
+  chown -R "${ES_USER}:${ES_GROUP}" /elasticsearch/config/
 }
 
 
@@ -42,16 +42,19 @@ if [[ "$#" -eq 0 ]]; then
   exec /usr/bin/cluster-wrapper
 
 elif [[ "$1" == "--readonly" ]]; then
-  setup_runtime_configuration
-  export READONLY=1
-  exec /usr/bin/cluster-wrapper
+  echo "Not supported"
+  exit 1
 
 elif [[ "$1" == "--initialize" ]]; then
   # NOTE: Technically we're not going to use the runtime configuration, but we
   # use setup_runtime_configuration to grab the cert and persist it to disk if
   # it was provided in the environment.
   setup_runtime_configuration
-  htpasswd -b -c "${DATA_DIRECTORY}/auth_basic.htpasswd" "${USERNAME:-aptible}" "$PASSPHRASE"
+
+  /elasticsearch/bin/elasticsearch-users useradd "${USERNAME:-aptible}" -pass "$PASSPHRASE" -r superuser
+  sleep 1 # TODO - understand the race in copying...
+  cp /elasticsearch/config/users $DATA_DIRECTORY
+  cp /elasticsearch/config/users_roles $DATA_DIRECTORY
 
   # WARNING: Don't touch any directory that's not on DATA_DIRECTORY or
   # SSL_DIRECTORY here: your changes wouldn't be persisted from --initialize to

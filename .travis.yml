@@ -10,19 +10,8 @@ env:
     - secure: prrYqbvKiVTSZhbOz2szoVbQN/pOjvkh7/jkSGMmqVcWR2NSMfVprlvrEoVvq9dc4iEv8u6vQ4w/QMWpfozmRK+dyeM1EhIWD5qBMU4zOg9iGIIDqMRx/aaxez2PafkggP/u2Wpov1btqpV5F8yVseNUwBA4OkUFHAHujvJ2mmY=
     - secure: Oj9Qh9fy+0fx9RaiyIbl115sa8DRUBLSNUrrjn4F71bSvFFPQ80ub9RRrnSKiAT5etYLkiqFlk8JCOibIjmNMRqcIyBesJ0kVru4GppyCpDMy9btxpGIlXrje3/SJqfJ9CiGyjLGmPN1YGsTdVSmTD45HQKfHCsoO7qqNhAjpww=
   matrix:
-    - TAG=1.5
-    - TAG=2.2
-    - TAG=2.4
-    - TAG=5.0
-    - TAG=5.1
-    - TAG=5.6
-    - TAG=6.0
-    - TAG=6.1
-    - TAG=6.2
-    - TAG=6.3
-    - TAG=6.4
-    - TAG=6.5
-    - TAG=6.6
+    - TAG=7.4
+    - TAG=7.5
 
 script:
   - make build

@@ -3,7 +3,7 @@
 source "${BATS_TEST_DIRNAME}/test_helpers.sh"
 
 local_s_client() {
-  openssl s_client -connect localhost:443 "$@" < /dev/null
+  openssl s_client -connect localhost:9200 "$@" < /dev/null
 }
 
 @test "It should allow connections using TLS1.2" {
@@ -18,14 +18,14 @@ local_s_client() {
   local_s_client -tls1_1
 }
 
-@test "It should allow connections using TLS1.0" {
+@test "It should not allow connections using TLS1.0" {
   start_elasticsearch
 
-  local_s_client -tls1
+  ! local_s_client -tls1
 }
 
-@test "It should allow connections using SSLv3" {
+@test "It should not allow connections using SSLv3" {
   start_elasticsearch
 
-  local_s_client -ssl3
+  ! local_s_client -ssl3
 }

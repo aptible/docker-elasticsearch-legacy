@@ -6,9 +6,7 @@ set -o nounset
 # a backup respository, but we need to continue doing so since the new way:
 # * requires shell access to modify the filesystem
 # * cannot be updated at runtime
-if dpkg --compare-versions "$ES_VERSION" ge 6; then
-  export ES_JAVA_OPTS="-Des.allow_insecure_settings=true ${ES_JAVA_OPTS:-}"
-fi
+export ES_JAVA_OPTS="-Des.allow_insecure_settings=true ${ES_JAVA_OPTS:-}"
 
 if [[ -n "${ES_HEAP_SIZE:-}" ]]; then
   # If we have an ENV var that sets ES_HEAP_SIZE, then we use that.
@@ -24,20 +22,8 @@ fi
 
 if [[ -n "${ES_HEAP_SIZE:-}" ]]; then
   echo "APTIBLE_CONTAINER_SIZE=${APTIBLE_CONTAINER_SIZE:-}, ES_HEAP_SIZE=${ES_HEAP_SIZE}"
-
-  if dpkg --compare-versions "$ES_VERSION" ge 5; then
-    # If we're using ES 5, then ES_HEAP_SIZE no longer works, and we need to
-    # use the Java heap options instead. We also preserve whatever was in
-    # ES_JAVA_OPTS, just in case (while that's unspecified, if there are memory
-    # options there, they'll tend to take precedence)
-    export ES_JAVA_OPTS="-Xms${ES_HEAP_SIZE} -Xmx${ES_HEAP_SIZE} ${ES_JAVA_OPTS:-}"
-    unset ES_HEAP_SIZE
-  else
-    # If we're using an older version, then we should export that variable (it
-    # might already be exported if it came in via the environment, but if we
-    # generated it via APTIBLE_CONTAINER_SIZE, it won't).
-    export ES_HEAP_SIZE
-  fi
+  export ES_JAVA_OPTS="-Xms${ES_HEAP_SIZE} -Xmx${ES_HEAP_SIZE} ${ES_JAVA_OPTS:-}"
+  unset ES_HEAP_SIZE
 fi
 
 # If this version of Elasticsearch supports the keystore, create an emtpy
@@ -47,9 +33,11 @@ KEYSTORE_MANAGER="/elasticsearch/bin/elasticsearch-keystore"
 KEYSTORE_FILE="/elasticsearch/config/elasticsearch.keystore"
 if [[ -x "$KEYSTORE_MANAGER" ]]; then
   if [[ ! -f "$KEYSTORE_FILE" ]]; then
-    "$KEYSTORE_MANAGER" create
+    #"$KEYSTORE_MANAGER" create
+    TODO="check if this is needed still"
   fi
-  chown "${ES_USER}:${ES_GROUP}" "$KEYSTORE_FILE"
+  #chown "${ES_USER}:${ES_GROUP}" "$KEYSTORE_FILE"
+  TODO="check if this is needed still"
 fi
 
 # Install any user specified plugins
@@ -64,22 +52,8 @@ if [[ -n "${ES_PLUGINS:-}" ]]; then
   done
 fi
 
-# Finally, if ELASTICSEARCH_XPACK is set, then install the X-Pack. We don't
-# currently allow relying on the X-Pack for authentication (since we have Nginx
-# in front), but could so here if there is demand.
-if dpkg --compare-versions "$ES_VERSION" lt 6.3; then
-  if [[ -n "${ELASTICSEARCH_XPACK:-}" ]]; then
-    if [[ -d "/elasticsearch/plugins/x-pack" ]]; then
-      echo "X-Pack is already installed"
-    else
-      plugin-install-wrapper "x-pack"
-    fi
-    echo "xpack.security.enabled: false" >> /elasticsearch/config/elasticsearch.yml
-  fi
-else
-  # ES_VERSION gte 6.3 - those where we dont' need to explicitly install x-pack ourselves
-  # In case customer adds a paid license, we need to be sure this is disabled, too.
-  echo "xpack.security.enabled: false" >> /elasticsearch/config/elasticsearch.yml
-fi
+# Recover the default aptible user from the file realm
+cp $DATA_DIRECTORY/users /elasticsearch/config/
+cp $DATA_DIRECTORY/users_roles /elasticsearch/config/
 
 exec sudo -HE -u "$ES_USER" /elasticsearch/bin/elasticsearch "$@"

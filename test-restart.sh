@@ -14,7 +14,7 @@ function cleanup {
 
 function wait_for_db {
   for _ in $(seq 1 1000); do
-    if docker exec -it "$DB_CONTAINER" curl -fs "http://localhost:9200" >/dev/null 2>&1; then
+    if docker exec -it "$DB_CONTAINER" curl -fsk "https://aptible:password@localhost:9200" >/dev/null 2>&1; then
       return 0
     fi
     sleep 0.1
@@ -33,7 +33,7 @@ docker create --name "$DATA_CONTAINER" "$IMG"
 
 echo "Starting DB"
 docker run -it --rm \
-  -e USERNAME=user -e PASSPHRASE=pass -e DATABASE=db \
+  -e USERNAME=aptible -e PASSPHRASE=password -e DATABASE=db \
   --volumes-from "$DATA_CONTAINER" \
   "$IMG" --initialize \
   >/dev/null 2>&1

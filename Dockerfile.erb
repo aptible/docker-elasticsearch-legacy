@@ -1,83 +1,50 @@
-FROM quay.io/aptible/ubuntu:<%= ENV.fetch 'OS_VERSION' %>
+FROM quay.io/aptible/ubuntu:18.04
 
 # Create user early to ensure consistent UID
-ENV ES_USER <%= ENV.fetch 'ES_USER' %>
-ENV ES_GROUP <%= ENV.fetch 'ES_GROUP' %>
+ENV ES_USER elasticsearch
+ENV ES_GROUP elasticsearch
 RUN getent group "$ES_GROUP" || groupadd -r "$ES_GROUP"
 RUN getent passwd "$ES_USER" || useradd -r -g "$ES_GROUP" "$ES_USER"
 
 # Install utilities we'll need
 RUN apt-install software-properties-common apache2-utils sudo curl
 
-# Install Java and clean up
-ENV JAVA_VERSION <%= ENV.fetch 'JAVA_VERSION' %>
-RUN add-apt-repository -y ppa:openjdk-r/ppa && \
-    apt-install "openjdk-${JAVA_VERSION}-jre"
-
-# Install NGiNX
-RUN add-apt-repository -y ppa:nginx/stable && \
-    apt-install nginx && mkdir -p /etc/nginx/ssl
-
 # Install Elasticsearch and backup plugin.
+ENV DOWNLOAD_URL <%= ENV.fetch 'DOWNLOAD_URL' %>
 ENV ES_VERSION <%= ENV.fetch 'ES_VERSION' %>
 ENV ES_SHA1SUM <%= ENV.fetch 'ES_SHA1SUM' %>
-ENV ES_BACKUP_PLUGIN <%= ENV.fetch 'ES_BACKUP_PLUGIN' %>
 
 # Plugin wrapper for ES compatibility
 ADD bin/plugin-install-wrapper /usr/bin/plugin-install-wrapper
 
-RUN NEW_REPO="https://artifacts.elastic.co/downloads/elasticsearch" \
- && OLD_REPO="https://download.elasticsearch.org/elasticsearch/elasticsearch" \
- && REPO="$(dpkg --compare-versions "$ES_VERSION" ge 5 && printf "$NEW_REPO" || printf "$OLD_REPO" )" \
- && cd /tmp \
- && curl -fsSLO "${REPO}/elasticsearch-${ES_VERSION}.tar.gz" \
+RUN cd /tmp \
+ && curl -fsSL -o "elasticsearch-${ES_VERSION}.tar.gz" "${DOWNLOAD_URL}" \
  && echo "${ES_SHA1SUM}  elasticsearch-${ES_VERSION}.tar.gz" | sha1sum -c - \
  && tar xf "elasticsearch-${ES_VERSION}.tar.gz" \
  && rm "elasticsearch-${ES_VERSION}.tar.gz" \
  && mv "elasticsearch-${ES_VERSION}" /elasticsearch \
- && chown -R "${ES_USER}:${ES_GROUP}" "/elasticsearch/config" \
- && plugin-install-wrapper "$ES_BACKUP_PLUGIN"
-
-# Install node.js and elasticdump tool for --dump/--restore options.
-# https://github.com/taskrabbit/elasticsearch-dump
-ENV NODE_VERSION 4.3.1
-ENV NODE_SHA1SUM be09c49e82c49dae6945ece09be43abff4379818
-RUN cd /tmp \
- && curl -fsSLO "https://nodejs.org/dist/v$NODE_VERSION/node-v${NODE_VERSION}-linux-x64.tar.gz" \
- && echo "${NODE_SHA1SUM}  node-v${NODE_VERSION}-linux-x64.tar.gz" \
- && tar xf "node-v${NODE_VERSION}-linux-x64.tar.gz" \
- && rm "node-v${NODE_VERSION}-linux-x64.tar.gz" \
- && mv "node-v${NODE_VERSION}-linux-x64" / \
- && ln -s "/node-v${NODE_VERSION}-linux-x64/bin/node" /usr/local/bin/ \
- && ln -s "/node-v${NODE_VERSION}-linux-x64/bin/npm" /usr/local/bin/
-
+ && chown -R "${ES_USER}:${ES_GROUP}" "/elasticsearch/config" "/elasticsearch/logs" \
+ && plugin-install-wrapper repository-s3
 
 # Configuration templates
-ADD templates/nginx.conf.template /etc/nginx/nginx.conf.template
-ADD <%= ENV.fetch 'TAG' %>/templates/elasticsearch.yml.template /elasticsearch/config/elasticsearch.yml.template
-RUN rm /etc/nginx/nginx.conf
+ADD templates/elasticsearch.yml.template /elasticsearch/config/elasticsearch.yml.template
 RUN rm /elasticsearch/config/elasticsearch.yml
 
 # Additional wrappers
 ADD bin/cluster-wrapper /usr/bin/cluster-wrapper
-ADD bin/nginx-wrapper /usr/bin/nginx-wrapper
 ADD bin/elasticsearch-wrapper /usr/bin/elasticsearch-wrapper
 
 ADD bin/run-database.sh /usr/bin/
 ADD bin/utilities.sh /usr/bin/
 
 ENV DATA_DIRECTORY /var/db
-ENV SSL_DIRECTORY /etc/nginx/ssl
+ENV SSL_DIRECTORY /var/db/ssl
 
 VOLUME ["$DATA_DIRECTORY"]
-VOLUME ["$SSL_DIRECTORY"]
 
 # Integration tests
 ADD test /tmp/test
-ADD <%= ENV.fetch 'TAG' %>/test /tmp/test
 
-# Expose NGiNX proxy ports
-EXPOSE 80
-EXPOSE 443
+EXPOSE 9200
 
 ENTRYPOINT ["run-database.sh"]

@@ -37,12 +37,6 @@ setup() {
   mkdir -p "$SSL_DIRECTORY"
 }
 
-shutdown_nginx() {
-  NGINX_PID=$(pgrep nginx) || return 0
-  run pkill nginx
-  while [ -n "$NGINX_PID" ] && [ -e "/proc/${NGINX_PID}" ]; do sleep 0.1; done
-}
-
 shutdown_elasticsearch() {
   JAVA_PID=$(pgrep java) || return 0
   run pkill java
@@ -51,7 +45,6 @@ shutdown_elasticsearch() {
 
 teardown() {
   shutdown_elasticsearch
-  shutdown_nginx
   export DATA_DIRECTORY="$OLD_DATA_DIRECTORY"
   export SSL_DIRECTORY="$OLD_SSL_DIRECTORY"
   unset OLD_DATA_DIRECTORY

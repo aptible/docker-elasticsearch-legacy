@@ -2,32 +2,22 @@
 
 source "${BATS_TEST_DIRNAME}/test_helpers.sh"
 
+@test "It should have the repository-s3 plugin installed" {
+  /elasticsearch/bin/elasticsearch-plugin list | grep -q "repository-s3"
+}
+
 @test "It should install Elasticsearch $ES_VERSION" {
-  if dpkg --compare-versions "$ES_VERSION" eq 1.5.2; then
-    skip "Seperate test for 1.5"
-  fi
-  run elasticsearch-wrapper --version -v
-  [[ "$output" =~ "Version: $ES_VERSION"  ]]
+  /elasticsearch/bin/elasticsearch --version | grep $ES_VERSION
 }
 
-@test "It should provide an HTTP wrapper" {
-  initialize_elasticsearch
-  rm "$DATA_DIRECTORY/auth_basic.htpasswd"  # Disable auth for this test
-  wait_for_elasticsearch
-  run curl  http://localhost > "${BATS_TEST_DIRNAME}/test-output"
-  run curl http://localhost
-  [[ "$output" =~ "tagline"  ]]
-}
-
-@test "It should expose Elasticsearch over HTTP with Basic Auth" {
+@test "It should not expose Elasticsearch over HTTP" {
   start_elasticsearch
-  run curl http://aptible:password@localhost
-  [[ "$output" =~ "tagline"  ]]
+  ! curl -fail http://aptible:password@localhost:9200
 }
 
 @test "It should expose Elasticsearch over HTTPS with Basic Auth" {
   start_elasticsearch
-  run curl -k https://aptible:password@localhost
+  run curl -k https://aptible:password@localhost:9200
   [[ "$output" =~ "tagline"  ]]
 }
 
@@ -41,7 +31,7 @@ source "${BATS_TEST_DIRNAME}/test_helpers.sh"
   SSL_CERTIFICATE="$(cat /tmp/cert/server.crt)" SSL_KEY="$(cat /tmp/cert/server.key)" initialize_elasticsearch
   wait_for_elasticsearch
 
-  curl -kv https://localhost 2>&1 | grep "CN=elasticsearch-bats-test.com"
+  curl -kv https://localhost:9200 2>&1 | grep "CN=elasticsearch-bats-test.com"
   rm -rf /tmp/cert
 }
 
@@ -53,20 +43,13 @@ source "${BATS_TEST_DIRNAME}/test_helpers.sh"
   initialize_elasticsearch
   SSL_CERTIFICATE="$(cat /tmp/cert/server.crt)" SSL_KEY="$(cat /tmp/cert/server.key)" wait_for_elasticsearch
 
-  curl -kv https://localhost 2>&1 | grep "CN=elasticsearch-bats-test.com"
+  curl -kv https://localhost:9200 2>&1 | grep "CN=elasticsearch-bats-test.com"
   rm -rf /tmp/cert
-}
-
-@test "It should reject unauthenticated requests with Basic Auth enabled over HTTP" {
-  start_elasticsearch
-  run curl --fail http://localhost
-  [[ "$status" -eq 22 ]]  # CURLE_HTTP_RETURNED_ERROR - https://curl.haxx.se/libcurl/c/libcurl-errors.html
-  [[ "$output" =~ "401 Unauthorized"  ]]
 }
 
 @test "It should reject unauthenticated requests with Basic Auth enabled over HTTPS" {
   start_elasticsearch
-  run curl -k --fail https://localhost
+  run curl -k --fail https://localhost:9200
   [[ "$status" -eq 22 ]]  # CURLE_HTTP_RETURNED_ERROR - https://curl.haxx.se/libcurl/c/libcurl-errors.html
   [[ "$output" =~ "401 Unauthorized"  ]]
 }
@@ -85,9 +68,8 @@ source "${BATS_TEST_DIRNAME}/test_helpers.sh"
   run ps af --pid "$ES_PID"
   [[ "$output" =~ "$ES_PID" ]]
 
-  # Check that Java and Nginx are children
+  # Check that Java is a child
   run ps --ppid "$ES_PID"
-  [[ "$output" =~ "nginx" ]]
   [[ "$output" =~ "java" ]]
 
   # Kill ES (emulate a OOM process kill)
@@ -96,17 +78,6 @@ source "${BATS_TEST_DIRNAME}/test_helpers.sh"
   # Check that we exited with ES's status code
   wait "$ES_PID" || exit_code="$?"
   [[ "$exit_code" -eq "$((128+9))" ]]
-}
-
-@test "It should support --readonly mode" {
-  initialize_elasticsearch
-  wait_for_elasticsearch "--readonly"
-
-  curl "http://aptible:password@localhost"
-
-  run curl --fail -XPOST "http://aptible:password@localhost"
-  [[ "$output" =~ "Forbidden" ]]
-  [[ "$status" -eq 22 ]]  # CURLE_HTTP_RETURNED_ERROR - https://curl.haxx.se/libcurl/c/libcurl-errors.html
 }
 
 @test "It should support ES_HEAP_SIZE=256m" {
@@ -130,12 +101,13 @@ source "${BATS_TEST_DIRNAME}/test_helpers.sh"
   [[ "$output" =~ "-Xms512m -Xmx512m" ]]
 }
 
-@test "It should disable multicast cluster discovery in config" {
-  if dpkg --compare-versions "$ES_VERSION" ge 5; then
-    skip "Not needed on ${ES_VERSION}"
-  fi
+@test "It should not do cluster discovery." {
+  # This will need to be carefully configured later to support clustering.
 
-  initialize_elasticsearch
-  run grep "discovery.zen.ping.multicast.enabled" /elasticsearch/config/elasticsearch.yml
-  [[ "$output" =~ "false" ]]
+  SETTINGS_PATH='_cluster/settings?include_defaults=true&flat_settings=true&pretty=true'
+  DISCOVERY_SETTING='"discovery.type" : "single-node"'
+
+  start_elasticsearch
+
+  curl -k --fail "https://aptible:password@localhost:9200/${SETTINGS_PATH}" | grep "${DISCOVERY_SETTING}"
 }

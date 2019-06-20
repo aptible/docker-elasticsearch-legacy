@@ -13,7 +13,7 @@ AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
 S3_REGION="${S3_REGION:-us-east-1}"
 S3_BUCKET_BASE_PATH="${S3_BUCKET_BASE_PATH:-}"
 
-REPOSITORY_URL="http://user:pass@localhost:9200/_snapshot/logstash_snapshots"
+REPOSITORY_URL="http://aptible:password@localhost:9200/_snapshot/logstash_snapshots"
 
 json=$(cat << EOF
 {
@@ -38,7 +38,7 @@ function cleanup {
 function wait_for_s3 {
 
   for _ in $(seq 1 30); do
-    if docker exec "$DB_CONTAINER" curl -w "\n" -H'Content-Type: application/json' -sS -XPUT "${REPOSITORY_URL}" -d "$json" | grep '{\"acknowledged\":true}'; then
+    if docker exec "$DB_CONTAINER" curl -k -w "\n" -H'Content-Type: application/json' -sS -XPUT "${REPOSITORY_URL}" -d "$json" | grep '{\"acknowledged\":true}'; then
       echo "S3 backup succeeded."
       return 0
     fi
@@ -58,7 +58,7 @@ docker create --name "$DATA_CONTAINER" "$IMG"
 
 echo "Initializing DB"
 docker run -it --rm \
-  -e USERNAME=user -e PASSPHRASE=pass -e DATABASE=db \
+  -e USERNAME=aptible -e PASSPHRASE=password -e DATABASE=db \
   --volumes-from "$DATA_CONTAINER" \
   "$IMG" --initialize \
   >/dev/null 2>&1

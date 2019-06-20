@@ -1,0 +1,27 @@
+path:
+  data: DATA_DIRECTORY/data
+  logs: DATA_DIRECTORY/log
+http:
+  cors:
+    enabled: true
+    allow-origin: "/.*/"
+
+xpack:
+  security:
+    enabled: true
+    http:
+      ssl:
+        enabled: true
+        key: /elasticsearch/config/server.key
+        certificate: /elasticsearch/config/server.crt
+    transport:
+      ssl:
+        enabled: true
+        key: /elasticsearch/config/server.key
+        certificate: /elasticsearch/config/server.crt
+
+discovery:
+  type: single-node
+
+network:
+  host: 0.0.0.0

@@ -1,7 +1,0 @@
-path:
-  data: DATA_DIRECTORY/data
-  logs: DATA_DIRECTORY/log
-http:
-  cors:
-    enabled: true
-    allow-origin: "/.*/"
