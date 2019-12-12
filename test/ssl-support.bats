@@ -24,14 +24,10 @@ local_s_client() {
   local_s_client -tls1
 }
 
-@test "Only 1.5 version allows connections using SSLv3" {
+@test "All versions are configured to support SSLv3, TLS 1, 1.1, and 1.2." {
   start_elasticsearch
 
-  if dpkg --compare-versions "$ES_VERSION" lt 2; then
-    local_s_client -ssl3
-  else
-    # This test won't succeed in making a requests to the database at all on 
-    # Ubuntu 16, as SSLv3 has been removed from OpenSSL entirely in that version
-    ! local_s_client -ssl3
-  fi
+  # This cannot be direcly tested as above on Ubuntu 16,
+  # as SSLv3 has been removed from OpenSSL entirely in that version
+  grep "ssl_protocols SSLv3 TLSv1 TLSv1.1 TLSv1.2;" /etc/nginx/nginx.conf
 }
