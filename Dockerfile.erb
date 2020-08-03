@@ -12,14 +12,14 @@ RUN apt-install software-properties-common apache2-utils sudo curl
 # Install Elasticsearch and backup plugin.
 ENV DOWNLOAD_URL <%= ENV.fetch 'DOWNLOAD_URL' %>
 ENV ES_VERSION <%= ENV.fetch 'ES_VERSION' %>
-ENV ES_SHA1SUM <%= ENV.fetch 'ES_SHA1SUM' %>
+ENV ES_SHA512SUM <%= ENV.fetch 'ES_SHA512SUM' %>
 
 # Plugin wrapper for ES compatibility
 ADD bin/plugin-install-wrapper /usr/bin/plugin-install-wrapper
 
 RUN cd /tmp \
  && curl -fsSL -o "elasticsearch-${ES_VERSION}.tar.gz" "${DOWNLOAD_URL}" \
- && echo "${ES_SHA1SUM}  elasticsearch-${ES_VERSION}.tar.gz" | sha1sum -c - \
+ && echo "${ES_SHA512SUM}  elasticsearch-${ES_VERSION}.tar.gz" | sha512sum -c - \
  && tar xf "elasticsearch-${ES_VERSION}.tar.gz" \
  && rm "elasticsearch-${ES_VERSION}.tar.gz" \
  && mv "elasticsearch-${ES_VERSION}" /elasticsearch \
