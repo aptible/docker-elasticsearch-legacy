@@ -14,6 +14,7 @@ xpack:
         enabled: true
         key: /elasticsearch/config/server.key
         certificate: /elasticsearch/config/server.crt
+        supported_protocols: TLSv1.2, TLSv1.1
     transport:
       ssl:
         enabled: true

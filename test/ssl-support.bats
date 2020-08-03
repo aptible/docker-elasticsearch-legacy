@@ -25,7 +25,8 @@ local_s_client() {
 }
 
 @test "It should not allow connections using SSLv3" {
-  start_elasticsearch
-
-  ! local_s_client -ssl3
+  # This cannot be direcly tested as above on Ubuntu 16, as
+  # SSLv3 has been removed from OpenSSL entirely in that version
+  # We'll have to take Elastic's word that the setting we specified
+  # for `ssl.supported_protocols` disables it.
 }
