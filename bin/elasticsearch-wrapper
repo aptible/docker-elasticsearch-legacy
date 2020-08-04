@@ -26,20 +26,6 @@ if [[ -n "${ES_HEAP_SIZE:-}" ]]; then
   unset ES_HEAP_SIZE
 fi
 
-# If this version of Elasticsearch supports the keystore, create an emtpy
-# keystore and give the Elasticsearch user access. We don't use it to store
-# anything, but it needs to be accessible or e.g. the X-Pack won't boot.
-KEYSTORE_MANAGER="/elasticsearch/bin/elasticsearch-keystore"
-KEYSTORE_FILE="/elasticsearch/config/elasticsearch.keystore"
-if [[ -x "$KEYSTORE_MANAGER" ]]; then
-  if [[ ! -f "$KEYSTORE_FILE" ]]; then
-    #"$KEYSTORE_MANAGER" create
-    TODO="check if this is needed still"
-  fi
-  #chown "${ES_USER}:${ES_GROUP}" "$KEYSTORE_FILE"
-  TODO="check if this is needed still"
-fi
-
 # Install any user specified plugins
 
 if [[ -n "${ES_PLUGINS:-}" ]]; then
