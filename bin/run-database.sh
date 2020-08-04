@@ -52,7 +52,7 @@ elif [[ "$1" == "--initialize" ]]; then
   setup_runtime_configuration
 
   /elasticsearch/bin/elasticsearch-users useradd "${USERNAME:-aptible}" -pass "$PASSPHRASE" -r superuser
-  sleep 1 # TODO - understand the race in copying...
+
   cp /elasticsearch/config/users $DATA_DIRECTORY
   cp /elasticsearch/config/users_roles $DATA_DIRECTORY
 
