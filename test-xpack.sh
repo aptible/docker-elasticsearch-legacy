@@ -84,8 +84,5 @@ if [[ "$uid" != "$(get_license_uid)" ]]; then
   exit 1
 fi
 
-TODO="what is this"
-if [[ ! "$TAG" =~ ^5 ]]; then
-  echo "Checking keystore was not used"
-  ! docker exec -it "$DB_CONTAINER" /elasticsearch/bin/elasticsearch-keystore list | grep -v keystore.seed
-fi
+echo "Checking keystore was not used"
+! docker exec -it "$DB_CONTAINER" /elasticsearch/bin/elasticsearch-keystore list | grep -v keystore.seed
