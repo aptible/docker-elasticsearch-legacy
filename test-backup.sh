@@ -65,7 +65,6 @@ docker run -it --rm \
 
 echo "Starting DB"
 docker run -d --name="$DB_CONTAINER" \
-  -e EXPOSE_HOST=127.0.0.1 -e EXPOSE_PORT_27217=27217 \
   --volumes-from "$DATA_CONTAINER" \
   "$IMG"
 

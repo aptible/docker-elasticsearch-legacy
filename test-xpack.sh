@@ -53,7 +53,6 @@ docker run -it --rm \
 
 echo "Starting DB with X-Pack"
 docker run -d --name="$DB_CONTAINER" \
-  -e EXPOSE_HOST=127.0.0.1 -e EXPOSE_PORT_27217=27217 \
   -e ELASTICSEARCH_XPACK="1" \
   --volumes-from "$DATA_CONTAINER" \
   "$IMG"
@@ -78,7 +77,6 @@ docker rm "$DB_CONTAINER"
 
 echo "Recreating"
 docker run -d --name="$DB_CONTAINER" \
-  -e EXPOSE_HOST=127.0.0.1 -e EXPOSE_PORT_27217=27217 \
   -e ELASTICSEARCH_XPACK="1" \
   --volumes-from "$DATA_CONTAINER" \
   "$IMG"

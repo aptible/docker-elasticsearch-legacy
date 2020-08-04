@@ -6,7 +6,8 @@ IMG="$REGISTRY/$REPOSITORY:$TAG"
 
 echo "Unit Tests..."
 docker run -it --rm --entrypoint "bash" "$IMG" \
- -c "bats /tmp/test"
+ -c "apt-install python && \
+     bats /tmp/test"
 
 TESTS=(
   test-restart
