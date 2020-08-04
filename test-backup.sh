@@ -13,7 +13,7 @@ AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
 S3_REGION="${S3_REGION:-us-east-1}"
 S3_BUCKET_BASE_PATH="${S3_BUCKET_BASE_PATH:-}"
 
-REPOSITORY_URL="http://aptible:password@localhost:9200/_snapshot/logstash_snapshots"
+REPOSITORY_URL="https://aptible:password@localhost:9200/_snapshot/logstash_snapshots"
 
 json=$(cat << EOF
 {
