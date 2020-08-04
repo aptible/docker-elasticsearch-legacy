@@ -23,9 +23,17 @@ source "${BATS_TEST_DIRNAME}/test_helpers.sh"
     -H 'Content-Type: application/json' -d'{"password" : "s3cr3t"}' | grep "${RESULT}"
 }
 
-@test "Customers can set the password for the default users." {
-  skip "TODO"
-  #elastic, kibana, logstash_system, beats_system, apm_system, remote_monitoring_user
+@test "Customers can set the password for the default users if they wish." {
+  start_elasticsearch
+
+  CONTENT_TYPE='Content-Type: application/json'
+
+  ! curl -k "https://kibana:anything@localhost:9200/"
+
+  curl -k -X POST "https://aptible:password@localhost:9200/_security/user/kibana/_password" \
+    -H 'Content-Type: application/json' -d'{"password" : "mAg1cSAuC3"}'
+
+  curl -k "https://kibana:mAg1cSAuC3@localhost:9200/"
 }
 
 @test "It should let us create a user via the API" {
