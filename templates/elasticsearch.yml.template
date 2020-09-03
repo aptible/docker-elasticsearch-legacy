@@ -24,5 +24,8 @@ xpack:
 discovery:
   type: single-node
 
+cluster:
+  name: __CLUSTER_NAME__
+
 network:
   host: 0.0.0.0

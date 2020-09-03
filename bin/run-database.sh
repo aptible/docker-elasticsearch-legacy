@@ -5,6 +5,7 @@
 
 function setup_runtime_configuration() {
   sed "s:__DATA_DIRECTORY__:${DATA_DIRECTORY}:g" "/elasticsearch/config/elasticsearch.yml.template" \
+    | sed "s:__CLUSTER_NAME__:${EXPOSE_HOST:-elasticsearch}:g" \
     > "/elasticsearch/config/elasticsearch.yml"
 
   mkdir -p "$SSL_DIRECTORY"

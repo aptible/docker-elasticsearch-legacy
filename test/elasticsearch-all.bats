@@ -111,3 +111,18 @@ source "${BATS_TEST_DIRNAME}/test_helpers.sh"
 
   curl -k --fail "https://aptible:password@localhost:9200/${SETTINGS_PATH}" | grep "${DISCOVERY_SETTING}"
 }
+
+@test "It should have a unique cluster name (based on host name)." {
+  # This can be used as a unique identifier in monitoring, such as in Telegraph
+  # see https://aptible.zendesk.com/agent/tickets/24449
+
+  # It also is used as a key for defining a cluster, so in the future any
+  # additional cluster nodes will need it set to this value, too.
+
+  SETTINGS_PATH='_cluster/settings?include_defaults=true&flat_settings=true&pretty=true'
+  CLUSTER_NAME_SETTING='"cluster.name" : "foo.bar"'
+
+  EXPOSE_HOST="foo.bar" start_elasticsearch
+
+  curl -k --fail "https://aptible:password@localhost:9200/${SETTINGS_PATH}" | grep "${CLUSTER_NAME_SETTING}"
+}
