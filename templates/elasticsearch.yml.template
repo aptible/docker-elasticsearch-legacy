@@ -1,6 +1,6 @@
 path:
-  data: DATA_DIRECTORY/data
-  logs: DATA_DIRECTORY/log
+  data: __DATA_DIRECTORY__/data
+  logs: __DATA_DIRECTORY__/log
 http:
   cors:
     enabled: true

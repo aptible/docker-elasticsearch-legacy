@@ -4,8 +4,7 @@
 . /usr/bin/utilities.sh
 
 function setup_runtime_configuration() {
-  sed "s:SSL_DIRECTORY:${SSL_DIRECTORY}:g" "/elasticsearch/config/elasticsearch.yml.template" \
-    | sed "s:DATA_DIRECTORY:${DATA_DIRECTORY}:g" \
+  sed "s:__DATA_DIRECTORY__:${DATA_DIRECTORY}:g" "/elasticsearch/config/elasticsearch.yml.template" \
     > "/elasticsearch/config/elasticsearch.yml"
 
   mkdir -p "$SSL_DIRECTORY"
