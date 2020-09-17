@@ -28,7 +28,7 @@ source "${BATS_TEST_DIRNAME}/test_helpers.sh"
 
   CONTENT_TYPE='Content-Type: application/json'
 
-  ! curl -k "https://kibana:anything@localhost:9200/"
+  ! curl -k "https://kibana:mAg1cSAuC3@localhost:9200/"
 
   curl -k -X POST "https://aptible:password@localhost:9200/_security/user/kibana/_password" \
     -H 'Content-Type: application/json' -d'{"password" : "mAg1cSAuC3"}'
