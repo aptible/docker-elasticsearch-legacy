@@ -14,14 +14,16 @@ function setup_runtime_configuration() {
   local ssl_key_file="${SSL_DIRECTORY}/server.key"
 
   if [ -n "$SSL_CERTIFICATE" ] && [ -n "$SSL_KEY" ]; then
+    # Always perfer a certificate defined in the Environment
+    # Deploy will always provide it this way
     echo "Cert present in environment - using them"
     echo "$SSL_CERTIFICATE" > "$ssl_cert_file"
     echo "$SSL_KEY" > "$ssl_key_file"
   elif [ -f "$ssl_cert_file" ] && [ -f "$ssl_key_file" ]; then
+    # Outside of Deploy, you may provide a certificate from the filesystem
     echo "Cert present on filesystem - using them"
-    # ES demands that the certificate and key live in the Elasticsearch configuration directory
-    cp $ssl_key_file $ssl_cert_file /elasticsearch/config/
   else
+    # If no certificate is provided, generate a self-signed one as last resort
     echo "Cert not found - autogenerating"
     SUBJ="/C=US/ST=New York/L=New York/O=Example/CN=elasticsearch.example.com"
     OPTS="req -nodes -new -x509 -sha256"
@@ -31,6 +33,11 @@ function setup_runtime_configuration() {
 
   unset SSL_CERTIFICATE
   unset SSL_KEY
+
+  # ES demands that the certificate and key live in the Elasticsearch config directory
+  # Since we prefer the config to NOT be persistent, we'll copy the certificate from
+  # the persistent location to the config location every time the container starts
+  cp $ssl_key_file $ssl_cert_file /elasticsearch/config/
 
   chmod 600 "$ssl_key_file"
   chown -R "${ES_USER}:${ES_GROUP}" /elasticsearch/config/
