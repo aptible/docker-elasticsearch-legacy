@@ -39,7 +39,6 @@ docker run -it --rm \
   >/dev/null 2>&1
 
 docker run -d --name="$DB_CONTAINER" \
-  -e EXPOSE_HOST=127.0.0.1 -e EXPOSE_PORT_27217=27217 \
   --volumes-from "$DATA_CONTAINER" \
   "$IMG"
 

@@ -45,6 +45,8 @@ VOLUME ["$DATA_DIRECTORY"]
 # Integration tests
 ADD test /tmp/test
 
-EXPOSE 9200
+ENV ES_PROTOCOL=https ES_PORT=9200
+
+EXPOSE ${ES_PORT}
 
 ENTRYPOINT ["run-database.sh"]

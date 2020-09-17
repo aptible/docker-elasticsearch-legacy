@@ -126,3 +126,33 @@ source "${BATS_TEST_DIRNAME}/test_helpers.sh"
 
   curl -k --fail "https://aptible:password@localhost:9200/${SETTINGS_PATH}" | grep "${CLUSTER_NAME_SETTING}"
 }
+
+export_exposed_ports() {
+  ES_PORT_VAR="EXPOSE_PORT_$ES_PORT"
+  export $ES_PORT_VAR=$ES_PORT
+}
+
+@test "It should return valid JSON for --discover and --connection-url" {
+  EXPOSE_HOST=localhost PASSPHRASE="password" \
+    run-database.sh --connection-url | python -c 'import sys, json; json.load(sys.stdin)'
+
+  EXPOSE_HOST=localhost PASSPHRASE="password" \
+    run-database.sh --discover | python -c 'import sys, json; json.load(sys.stdin)'
+}
+
+@test "It should return a usable connection URL for --connection-url" {
+  start_elasticsearch
+  export_exposed_ports
+
+  EXPOSE_HOST=localhost PASSPHRASE="password" \
+    run-database.sh --connection-url > "${TEST_BASE_DIRECTORY}/url"
+
+  pushd "${TEST_BASE_DIRECTORY}"
+  URL="$(python -c "import sys, json; print json.load(open('url'))['credentials'][0]['connection_url']")"
+  popd
+
+  [[ "https://aptible:password@localhost:443" = "$URL" ]]
+
+  run curl -k --fail "$URL"
+}
+
