@@ -75,8 +75,10 @@ VOLUME ["$SSL_DIRECTORY"]
 ADD test /tmp/test
 ADD <%= ENV.fetch 'TAG' %>/test /tmp/test
 
+ENV ES_PROTOCOL=https ES_PORT=443
+
 # Expose NGiNX proxy ports
 EXPOSE 80
-EXPOSE 443
+EXPOSE ${ES_PORT}
 
 ENTRYPOINT ["run-database.sh"]

@@ -71,6 +71,32 @@ elif [[ "$1" == "--restore" ]]; then
   echo "Not supported"
   exit 1
 
+elif [[ "$1" == "--discover" ]]; then
+  cat <<EOM
+{
+  "version": "1.0",
+  "environment": {
+    "PASSPHRASE": "$(pwgen -s 32)"
+  }
+}
+EOM
+
+elif [[ "$1" == "--connection-url" ]]; then
+  ES_EXPOSE_PORT_PTR="EXPOSE_PORT_${ES_PORT}"
+
+  cat <<EOM
+{
+  "version": "1.0",
+  "credentials": [
+    {
+      "type": "elasticsearch",
+      "default": true,
+      "connection_url": "${ES_PROTOCOL}://${USERNAME:-aptible}:${PASSPHRASE}@${EXPOSE_HOST}:${!ES_EXPOSE_PORT_PTR}"
+    }
+  ]
+}
+EOM
+
 else
   echo "Unrecognized command: $1"
   exit 1
