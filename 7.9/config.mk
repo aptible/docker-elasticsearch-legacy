@@ -1,3 +1,3 @@
-export ES_VERSION = 7.9.0
+export ES_VERSION = 7.9.1
 export DOWNLOAD_URL = https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-$(ES_VERSION)-linux-x86_64.tar.gz
-export ES_SHA512SUM = 80e294f1ad9cceafb5dff1db3f596cfdd40031b6d3deee1f8833c48a33125cc1e702cbdfe9851e61cd0c0762f0256a97e30ef0caeb5a78d598d7b2ef7e7b5a0a
+export ES_SHA512SUM = e24aab0fbeb0b53cc386bb0ca1fc84c457851c5d80d147324bf97ff42f063332a93dec3c693550662393a72c7a0522a100181dd9a7d50b3e487a0f2a2a9bbcc0 
