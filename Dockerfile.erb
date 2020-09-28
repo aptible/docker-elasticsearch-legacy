@@ -7,7 +7,7 @@ RUN getent group "$ES_GROUP" || groupadd -r "$ES_GROUP"
 RUN getent passwd "$ES_USER" || useradd -r -g "$ES_GROUP" "$ES_USER"
 
 # Install utilities we'll need
-RUN apt-install software-properties-common apache2-utils sudo curl
+RUN apt-install software-properties-common apache2-utils sudo curl pwgen
 
 # Install Java and clean up
 ENV JAVA_VERSION <%= ENV.fetch 'JAVA_VERSION' %>

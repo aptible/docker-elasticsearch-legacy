@@ -146,10 +146,13 @@ export_exposed_ports() {
 }
 
 @test "It should return valid JSON for --discover and --connection-url" {
-  EXPOSE_HOST=localhost PASSPHRASE="password" \
+
+  random_pass="$(pwgen -s 32)"
+
+  EXPOSE_HOST=localhost PASSPHRASE="${random_pass}" \
     run-database.sh --connection-url | python -c 'import sys, json; json.load(sys.stdin)'
 
-  EXPOSE_HOST=localhost PASSPHRASE="password" \
+  EXPOSE_HOST=localhost PASSPHRASE="${random_pass}" \
     run-database.sh --discover | python -c 'import sys, json; json.load(sys.stdin)'
 }
 
