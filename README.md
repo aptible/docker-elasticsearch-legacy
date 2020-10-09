@@ -6,6 +6,8 @@
 
 Elasticsearch on Docker.
 
+This repository hosts only legacy versions of Elasticsearch. For newer versions, please refer to https://github.com/aptible/docker-elasticsearch
+
 ## Installation and Usage
 
     docker pull quay.io/aptible/elasticsearch
@@ -20,13 +22,12 @@ The first command sets up a data container named `data` which will hold the conf
 
 ## Available Tags
 
-* `latest`: Currently Elasticsearch 6.8
 * `6.8`
-* `6.7`
-* `6.6`
-* `6.5`
-* `6.4`
-* `6.3`
+* `6.7`(EOL 2020-09-26)
+* `6.6`(EOL 2020-07-29)
+* `6.5`(EOL 2020-05-14)
+* `6.4`(EOL 2020-02-23)
+* `6.3`(EOL 2019-12-13)
 * `6.2`(EOL 2019-08-06)
 * `6.1`(EOL 2019-06-13)
 * `6.0`(EOL 2019-05-14)
