@@ -1,1 +1,3 @@
-LATEST_TAG = 6.8
+# The latest tag is defined in https://github.com/aptible/docker-elasticsearch
+LATEST_TAG=none
+
