@@ -91,7 +91,7 @@ elif [[ "$1" == "--connection-url" ]]; then
     {
       "type": "elasticsearch",
       "default": true,
-      "connection_url": "${ES_PROTOCOL}://${USERNAME:-aptible}:${PASSPHRASE}@${EXPOSE_HOST}:${!ES_EXPOSE_PORT_PTR}"
+      "connection_url": "${ES_PROTOCOL}://${USERNAME:-aptible}:${PASSPHRASE}@${EXPOSE_HOST}:${!ES_EXPOSE_PORT_PTR}/"
     }
   ]
 }
