@@ -36,7 +36,7 @@ The first command sets up a data container named `data` which will hold the conf
 * `5.0`(EOL 2018-04-26)
 * `2.4`(EOL 2018-02-28)
 * `2.2`(EOL 2017-08-02)
-* `1.5`(EOL 2016-09-23)
+* ~`1.5`(EOL 2016-09-23)~ Deprecated
 
     (https://www.elastic.co/support/eol)
 

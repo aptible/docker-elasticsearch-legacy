@@ -3,9 +3,6 @@
 source "${BATS_TEST_DIRNAME}/test_helpers.sh"
 
 @test "It should install Elasticsearch $ES_VERSION" {
-  if dpkg --compare-versions "$ES_VERSION" eq 1.5.2; then
-    skip "Seperate test for 1.5"
-  fi
   run elasticsearch-wrapper --version -v
   [[ "$output" =~ "Version: $ES_VERSION"  ]]
 }
