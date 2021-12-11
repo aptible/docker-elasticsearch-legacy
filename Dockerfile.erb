@@ -50,6 +50,9 @@ RUN cd /tmp \
  && ln -s "/node-v${NODE_VERSION}-linux-x64/bin/node" /usr/local/bin/ \
  && ln -s "/node-v${NODE_VERSION}-linux-x64/bin/npm" /usr/local/bin/
 
+# Remove JndiLookup.class
+RUN apt-install zip \
+ && zip -q -d /elasticsearch/lib/log4j*-core-*.jar org/apache/logging/log4j/core/lookup/JndiLookup.class || true
 
 # Configuration templates
 ADD templates/nginx.conf.template /etc/nginx/nginx.conf.template
